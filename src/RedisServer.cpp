@@ -28,6 +28,7 @@ void signalHandler(int signum){
 
 void RedisServer::setupSignalHandler(){
     signal(SIGINT, signalHandler);
+    signal(SIGCHLD, SIG_IGN);
 }
 
 //RedisServer:: tells the compiler this function belongs in the RedisServer class

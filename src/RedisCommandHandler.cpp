@@ -159,8 +159,90 @@ std::string RedisCommandHandler::processCommand(const std::string& commandLine){
     }
 
     //list operations
+    //push to head of list
+    else if(cmd == "LPUSH"){
+        if(tokens.size() < 3) response << "-Error: LPUSH requires key and value\r\n";
+        else{
+            int count = 0;
+            for(size_t i = 2; i<tokens.size(); ++i){
+                count = db.lpush(tokens[1], tokens[i]);
+            }
+            response << ":" << count << "\r\n";
+        }
+    }
+    //push to tail of list
+    else if(cmd == "RPUSH"){
+        if(tokens.size() < 3) response << "-Error: RPUSH requires key and value\r\n";
+        else{
+            int count = 0;
+            for(size_t i = 2; i<tokens.size(); ++i){
+                count = db.rpush(tokens[1], tokens[i]);
+            }
+            response << ":" << count << "\r\n";
+        }
+    }
+    //pop from head
+    else if(cmd == "LPOP"){
+        if(tokens.size() < 2) response << "-Error: LPOP requires key\r\n";
+        else{
+            std::string val;
+            if(db.lpop(tokens[1], val)) response << "$" << val.size() << "\r\n" << val << "\r\n";
+            else response << "$-1\r\n";
+        }
+    }
+    //pop from tail
+    else if(cmd == "RPOP"){
+        if(tokens.size() < 2) response << "-Error: RPOP requires key\r\n";
+        else{
+            std::string val;
+            if(db.rpop(tokens[1], val)) response << "$" << val.size() << "\r\n" << val << "\r\n";
+            else response << "$-1\r\n";
+        }
+    }
+    //get range of elements
+    else if(cmd == "LRANGE"){
+        if(tokens.size() < 4) response << "-Error: LRANGE requires key, start, and stop\r\n";
+        else{
+            int start = std::stoi(tokens[2]);
+            int stop = std::stoi(tokens[3]);
+            std::vector<std::string> items = db.lrange(tokens[1], start, stop);
+            
+            response << "*" << items.size() << "\r\n";
+            for(const auto& item: items){
+                response << "$" << item.size() << "\r\n" << item << "\r\n";
+            }
+        }
+    }
 
-    //hash oprrations
+    //hash operations
+    //set field in hash
+    else if(cmd == "HSET"){
+        if(tokens.size() < 4) response << "-Error: HSET requires key, field, and value\r\n";
+        else{
+            bool isNew = db.hset(tokens[1], tokens[2], tokens[3]);
+            response << ":" << (isNew ? 1 : 0) << "\r\n";
+        }
+    }
+    //get field from hash
+    else if(cmd == "HGET"){
+        if(tokens.size() < 3) response << "-Error: HGET requires key and field\r\n";
+        else{
+            std::string val;
+            if(db.hget(tokens[1], tokens[2], val)) response << "$" << val.size() << "\r\n" << val << "\r\n";
+            else response << "$-1\r\n";
+        }
+    }
+    //get all fields and values
+    else if(cmd == "HGETALL"){
+        if(tokens.size() < 2) response << "-Error: HGETALL requires key\r\n";
+        else{
+            std::vector<std::string> pairs = db.hgetAll(tokens[1]);
+            response << "*" << pairs.size() << "\r\n";
+            for(const auto& item: pairs){
+                response << "$" << item.size() << "\r\n" << item << "\r\n";
+            }
+        }
+    }
     else{
         response << "0-Error:Unknown Command\r\n";
     }

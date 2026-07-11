@@ -23,20 +23,20 @@ int main(int argc, char* argv[]){
 
     //Background persistance: dump the database every 300 seconds, we save db after every 5 mins
     //the thread here is declared as a lamda expression
-    std::thread persistanceThread([](){
+    std::thread persistenceThread([](){
         while(true){
             std::this_thread::sleep_for(std::chrono::seconds(300));
             
-            //dump the database
-            if(!RedisDatabase::getInstance().dump("dump.my_rdb")){
-                std::cerr << "Error dumping database\n";
+            //use bgsave so the main server doesn't freeze
+            if(!RedisDatabase::getInstance().bgdump("dump.my_rdb")){
+                std::cerr << "Error starting background save\n";
             }
             else{
-                std::cout<<"Database dumped to dump.my_rdb\n";
+                std::cout<<"Background save initiated...\n";
             }
         }
     });
-    persistanceThread.detach();
+    persistenceThread.detach();
 
     server.run();
 

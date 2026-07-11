@@ -1,0 +1,8 @@
+# Compiled binaries
+redis_server
+redis_server_debug
+redis_cli
+*.o
+
+# Database dumps
+dump.my_rdb

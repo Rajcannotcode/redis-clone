@@ -46,7 +46,9 @@ std::string ResponseParser::parseResponse(int sockfd){
         case '*': return parseArray(sockfd);
 
         default:
-            return "(Error) Unknown reply type";
+            // eat the rest of the garbage line so it doesn't break the next command
+            std::string garbage = readLine(sockfd);
+            return "(Error) Unknown reply type" + std::string(1, prefix) + garbage;
     }
 }
 

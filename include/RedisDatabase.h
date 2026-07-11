@@ -25,16 +25,34 @@ public:
     bool expire(const std::string& key, const std::string& seconds);
     bool rename(const std::string& oldKey, const std::string& newKey);
 
+    //list operations
+    int lpush(const std::string& key, const std::string& value);
+    int rpush(const std::string& key, const std::string& value);
+    bool lpop(const std::string& key, std::string& value);
+    bool rpop(const std::string& key, std::string& value);
+    std::vector<std::string> lrange(const std::string& key, int start, int stop);
+
+    //hash operations
+    bool hset(const std::string& key, const std::string& field, const std::string& value);
+    bool hget(const std::string& key, const std::string& field, std::string& value);
+    std::vector<std::string> hgetAll(const std::string& key);
+
 
     //persistence: dump/load databse from file
     bool dump(const std::string& filename);
     bool load(const std::string& filename);
+    bool bgdump(const std::string& filename); // asynchronous dump
 
 private:
 
-    //force the compiler to use the default consturctor and destructor
-    RedisDatabase() = default;
+    //force the compiler to use the default destructor
+    RedisDatabase();
     ~RedisDatabase() = default;
+
+    //eviction helpers
+    bool isExpired(const std::string& key);
+    void activeEvictionLoop();
+
     //creates brand new database by copying existing one
     RedisDatabase(const RedisDatabase&) = default;
 
